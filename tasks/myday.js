@@ -94,7 +94,95 @@ const taskCategory = document.querySelector(".task-category");
 let dueDate = null;
 let overDue = false;
 let formatted = "";
-console.log(dueDate)
+
+function getToday(forWhat, forSetWhat) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  const formattedDate = `${year}-${month}-${day}`;
+  const daysName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  let currentDay = daysName[today.getDay()];;
+  console.log(formattedDate,currentDay);
+
+  if(forWhat === "forDropdown"){
+    return currentDay;
+  }
+
+  if(forSetWhat === "forSetToday"){
+    console.log(currentDay)
+  }
+
+  // return formattedDate;
+}
+
+getToday()
+
+
+function getTomorrow(forWhat){
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  let dueDate = new Date(today);
+  dueDate.setDate(today.getDate() + 1);
+
+  const year = dueDate.getFullYear();
+  const month = String(dueDate.getMonth() + 1).padStart(2, "0");
+  const day = String(dueDate.getDate()).padStart(2, "0");
+
+  const daysName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  let currentDay = daysName[dueDate.getDay()];
+
+  const formattedDate = `${year}-${month}-${day}`;
+
+  if(forWhat === "forDropdown"){
+    return currentDay;
+  }
+  console.log(formattedDate, currentDay);
+
+  // return formattedDate;
+}
+
+getTomorrow()
+function getNextMonday(forWhat, forSetWhat){
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // time normalize
+
+  let dueDate = new Date(today);
+
+    // next week Monday
+    const day = today.getDay(); // 0 = Sun, 1 = Mon
+    const daysToMonday = (8 - day) % 7 || 7;
+    dueDate.setDate(today.getDate() + daysToMonday);
+    // console.log(dueDate)
+    const year = dueDate.getFullYear();
+    const month = String(dueDate.getMonth() + 1).padStart(2, "0");
+    const days = String(dueDate.getDate()).padStart(2, "0");
+
+    const daysName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    let currentDay = daysName[dueDate.getDay()];
+
+    const formattedDate = `${year}-${month}-${days}`;
+
+    if(forWhat === "forDropdown"){
+    return currentDay;
+  }
+
+  if(forSetWhat === "forSetNextWeekMon"){
+    console.log(formattedDate)
+  }
+    console.log(formattedDate, currentDay);
+    
+
+  // return dueDate;
+}
+
+getNextMonday()
+
+getToday()
 
 async function checkIsOverDue(task) {
   if (!task.dueDate) return;
@@ -103,7 +191,9 @@ async function checkIsOverDue(task) {
   today.setHours(0, 0, 0, 0); // time ko ignore
 
   // dueDate ko ISO format me parse karo
+  console.log(task.dueDate)
   const dueDateObj = new Date(task.dueDate); // e.g., "2026-01-31"
+  console.log(dueDateObj)
   dueDateObj.setHours(0, 0, 0, 0);
 
   let overDue = false;
@@ -193,16 +283,39 @@ addTaskInput.addEventListener("keypress", async (e) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+  const calendarDropdownItem = document.querySelectorAll(".calendarDropdownItem");
   const calendarWrapper = document.getElementById("calendarWrapper");
   const calendarDropdown = document.getElementById("calendarDropdown");
   const taskDate = document.getElementById("taskDate");
+  // const today = document.getElementById("today");
+  // const tomorrow = document.getElementById("tomorrow");
+  // const nextWeekMon = document.getElementById("nextWeekMon");
+  const days = [document.getElementById("today"), document.getElementById("tomorrow"), document.getElementById("nextWeekMon")]
+  const dates = [()=> getToday("forDropdown", "forSetToday"), ()=> getTomorrow("forDropdown", "forSetTomorrow"),()=> getNextMonday("forDropdown", "forSetnextWeekMon")]
 
   // Toggle dropdown
   calendarWrapper.addEventListener("click", (e) => {
     e.stopPropagation();
     console.log("Dropdown clicked");
+    for(let i = 0; i < days.length; i++){
+    days[i].innerHTML = dates[i]();
+    }
     calendarDropdown.classList.toggle("open");
   });
+
+
+  calendarDropdownItem.forEach((item, i)=>{
+    item.addEventListener('click', ()=>{
+       dates[i]();
+    })
+  })
+
+  // for(let i = 0; i < days.length; i++){
+  //   // console.log(dates, days[i])
+  //   days[i].addEventListener('click', ()=>{
+  //     console.log("s")
+  //   })
+  // }
 
   document.addEventListener("click", () => {
     calendarDropdown.classList.remove("open");
@@ -236,7 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
 
 
 // const loader = document.getElementById("loader");
