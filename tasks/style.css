@@ -309,6 +309,7 @@ body {
   padding: 24px;
   background: var(--bg-main);
   min-width: 0;
+  position: relative;
 }
 
 .content-top{
@@ -485,7 +486,36 @@ background-color: var(--bg-sidebar);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin: 30px 0px;
+  margin: 30px 0px 0px 0px;
+}
+
+/* ////////////////// */
+
+.loader {
+  width: 40px;
+  height: 40px;
+  margin: 20px auto;
+  border: 4px solid #ccc;
+  border-top-color: #2563eb; /* primary color */
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  animation: spin 1s linear infinite;
+  display: none;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.no-tasks-image{
+  position: absolute;
+  top: 50%;
+  left: 35%;
+  width: 230px;
+  height: 200px;
+  display: none;
 }
 
 .task-text{
@@ -510,6 +540,7 @@ background-color: var(--bg-sidebar);
   border-right:1px solid var(--border-color); */
   border-radius: 4px; 
   background-color: var(--bg-sidebar);
+  width: 100%;
 }
 
 .task-check{
@@ -666,6 +697,18 @@ background-color: var(--bg-sidebar);
   position: relative;
 }
 
+#calendarWrapper{
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  padding: 2px;
+  gap: 5px;
+  font-size: 13px;
+}
+
+
+
 
 /* Dropdown container */
 .calendar-dropdown {
@@ -786,11 +829,30 @@ display: flex;
 
 
 
-
-
-
 /* ================= MOBILE ================= */
 @media (max-width: 768px) {
+
+.loader {
+  width: 35px;
+  height: 35px;
+  margin: 20px auto;
+  border: 3px solid #ccc;
+  border-top-color: #2563eb; /* primary color */
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 45%;
+  animation: spin 1s linear infinite;
+}
+
+.no-tasks-image{
+  position: absolute;
+  top: 40%;
+  left: 22%;
+  width: 210px;
+  height: 190px;
+}
+
 
   /* App layout fix */
   #app {

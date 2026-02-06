@@ -1,55 +1,5 @@
-// document.addEventListener("DOMContentLoaded", () => {
-//   const calendarWrapper = document.getElementById("calendarWrapper");
-//   const calendarDropdown = document.getElementById("calendarDropdown");
-//   const taskDate = document.getElementById("taskDate");
-
-//   // Toggle dropdown
-//   calendarWrapper.addEventListener("click", (e) => {
-//     e.stopPropagation();
-//     console.log("Dropdown clicked");
-//     calendarDropdown.classList.toggle("open");
-//   });
-
-//   document.addEventListener("click", () => {
-//     calendarDropdown.classList.remove("open");
-//   });
-
-//   // flatpickr custom calendar
-//   flatpickr(taskDate, {
-//     minDate: "today",       // disable past dates
-//     dateFormat: "Y-m-d",
-//     allowInput: true,
-//     wrap: false,
-//     defaultDate: null,
-//     // Styling using theme colors
-//     onReady: function(selectedDates, dateStr, instance) {
-//       instance.calendarContainer.classList.add("calendar-theme");
-//     },
-//     // ✅ Date select hone par console me print
-//     onChange: function(selectedDates, dateStr, instance) {
-//       console.log("Selected date:", dateStr);
-//     }
-//   });
-// });
-
-
-// const logoutBtn = document.getElementById("logoutBtn");
-
-// logoutBtn.addEventListener("click", async () => {
-//   try {
-//     await signOut(auth);
-//     console.log("User logged out successfully");
-//     window.location.href = "../auth/login.html"
-//   } catch (error) {
-//     console.error("Logout error:", error);
-//   }
-// });
-
-
-
-
+// -------------------- Firebase Imports --------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-
 import {
   getFirestore,
   collection,
@@ -60,16 +10,15 @@ import {
   deleteDoc,
   query,
   orderBy,
-  where
+  where,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
 import {
   getAuth,
   onAuthStateChanged,
-  signOut
+  signOut,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-// // -------------------- 1️⃣ Firebase Config --------------------
+// -------------------- Firebase Config --------------------
 const firebaseConfig = {
   apiKey: "AIzaSyBYkSH5ZbdWH3p6C4G2LJOw9J5KkEDzeig",
   authDomain: "todo-web-application-7b804.firebaseapp.com",
@@ -79,347 +28,156 @@ const firebaseConfig = {
   appId: "1:304239157285:web:169d1dde7634693ab5dfcc",
 };
 
-// -------------------- 🔥 Firebase Init --------------------
+// -------------------- Firebase Init --------------------
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// -------------------- 🔥 DOM Elements --------------------
-/* ===============================
-   DOM REFERENCES
-================================ */
+// -------------------- DOM References --------------------
 const addTaskInput = document.getElementById("addtask");
 const taskList = document.querySelector(".task-list");
 const taskCategory = document.querySelector(".task-category");
-let dueDate = null;
-let overDue = false;
-let formatted = "";
+const calendarWrapper = document.getElementById("calendarWrapper");
+const calendarDropdown = document.getElementById("calendarDropdown");
+const taskDateInput = document.getElementById("taskDate");
+const logoutBtn = document.getElementById("logoutBtn");
+const sortBtn = document.getElementById("sortBtn");
+const todayDisplayDate = document.getElementById("today-display-date")
 
-function getToday(forWhat, forSetWhat) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+let taskDueDate = null; // controlled state
+let formattedDueDate = "";
 
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
+// -------------------- Utility Functions --------------------
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
-  const formattedDate = `${year}-${month}-${day}`;
-  const daysName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-  let currentDay = daysName[today.getDay()];;
-  console.log(formattedDate,currentDay);
+todayDisplayDate.innerHTML = `${getToday().formattedDisplayDate}`
 
-  if(forWhat === "forDropdown"){
-    return currentDay;
-  }
-
-  if(forSetWhat === "forSetToday"){
-    console.log(currentDay)
-  }
-
-  // return formattedDate;
+function formatDate(dateObj) {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-getToday()
-
-
-function getTomorrow(forWhat){
+function getToday() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const dayName = DAYS[today.getDay()];
+  console.log(dayName);
+  const displayDate = `${dayName}, ${ MONTHS[today.getMonth()]} ${today.getDate()}`;
+  console.log(displayDate);
+
+  return { iso: formatDate(today), label: "today", day: dayName, formattedDisplayDate: displayDate };
+}
+
+getToday();
+
+function getTomorrow() {
+  const tomorrow = new Date();
+  tomorrow.setHours(0, 0, 0, 0);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dayName = DAYS[tomorrow.getDay()];
+  console.log(dayName);
+  const displayDate = `${dayName}, ${ MONTHS[tomorrow.getMonth()]} ${tomorrow.getDate()}`;
+  console.log(displayDate);
   
-  let dueDate = new Date(today);
-  dueDate.setDate(today.getDate() + 1);
-
-  const year = dueDate.getFullYear();
-  const month = String(dueDate.getMonth() + 1).padStart(2, "0");
-  const day = String(dueDate.getDate()).padStart(2, "0");
-
-  const daysName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-  let currentDay = daysName[dueDate.getDay()];
-
-  const formattedDate = `${year}-${month}-${day}`;
-
-  if(forWhat === "forDropdown"){
-    return currentDay;
-  }
-  console.log(formattedDate, currentDay);
-
-  // return formattedDate;
+  return { iso: formatDate(tomorrow), label: "tomorrow", day: dayName, formattedDisplayDate: displayDate };
 }
 
-getTomorrow()
-function getNextMonday(forWhat, forSetWhat){
+getTomorrow();
+
+function getNextMonday() {
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // time normalize
+  today.setHours(0, 0, 0, 0);
+  const day = today.getDay();
+  const daysToMonday = (8 - day) % 7 || 7;
+  const nextMonday = new Date(today);
+  nextMonday.setDate(today.getDate() + daysToMonday);
 
-  let dueDate = new Date(today);
+  const dayName = DAYS[nextMonday.getDay()];
+  const monthName = MONTHS[nextMonday.getMonth()];
+  const display = `${dayName}, ${monthName} ${nextMonday.getDate()}`;
 
-    // next week Monday
-    const day = today.getDay(); // 0 = Sun, 1 = Mon
-    const daysToMonday = (8 - day) % 7 || 7;
-    dueDate.setDate(today.getDate() + daysToMonday);
-    // console.log(dueDate)
-    const year = dueDate.getFullYear();
-    const month = String(dueDate.getMonth() + 1).padStart(2, "0");
-    const days = String(dueDate.getDate()).padStart(2, "0");
+  const displayDate = `${dayName}, ${monthName} ${nextMonday.getDate()}`;
+  console.log(dayName)
+  console.log(displayDate)
 
-    const daysName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    let currentDay = daysName[dueDate.getDay()];
-
-    const formattedDate = `${year}-${month}-${days}`;
-
-    if(forWhat === "forDropdown"){
-    return currentDay;
-  }
-
-  if(forSetWhat === "forSetNextWeekMon"){
-    console.log(formattedDate)
-  }
-    console.log(formattedDate, currentDay);
-    
-
-  // return dueDate;
+  return { iso: formatDate(nextMonday), label: `due ${display}`, day: dayName, formattedDisplayDate: displayDate };
 }
 
-getNextMonday()
+getNextMonday();
 
-getToday()
+function isTaskOverdue(taskDateIso) {
+  if (!taskDateIso) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  console.log(today)
+  const due = new Date(taskDateIso);
+  due.setHours(0, 0, 0, 0);
+  console.log(due)
+  console.log(due < today)
+  return due < today;
+}
 
-async function checkIsOverDue(task) {
+function isTaskDueTodayOrTomorrow(taskDateIso) {
+  console.log(taskDateIso)
+  if (!taskDateIso) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(taskDateIso);
+  due.setHours(0, 0, 0, 0);
+  const diffDays = (due - today) / (1000 * 60 * 60 * 24);
+  console.log(diffDays)
+  return diffDays;
+}
+
+isTaskDueTodayOrTomorrow()
+
+// -------------------- Firestore Operations --------------------
+async function updateOverdueStatus(task) {
   if (!task.dueDate) return;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // time ko ignore
-
-  // dueDate ko ISO format me parse karo
   console.log(task.dueDate)
-  const dueDateObj = new Date(task.dueDate); // e.g., "2026-01-31"
-  console.log(dueDateObj)
-  dueDateObj.setHours(0, 0, 0, 0);
-
-  let overDue = false;
-
-  if (dueDateObj < today) {
-    overDue = true;
-  }
-
-// console.log(dueDateObj , " ", today)
-// console.log(dueDateObj < today)
-
-if (isDueTomorrow(task.dueDate)) {
-  console.log("✅ Task due tomorrow");
-} else {
-  console.log("❌ Not tomorrow");
-}
-
-  // Firestore update
   const docRef = doc(db, "tasks", task.id);
-  // console.log(task)
-  await updateDoc(docRef, {
-    isOverDue: overDue,
-  });
-
-  // console.log(`Task: ${task.title}, overDue: ${overDue}`);
+  await updateDoc(docRef, { isOverDue: isTaskOverdue(task.dueDate) });
 }
 
-function isDueTomorrow(dueDate) {
-  if (!dueDate) return false;
-
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const due = new Date(dueDate);
-  due.setHours(0,0,0,0);
-
-  const diffInDays = (due - today) / (1000 * 60 * 60 * 24);
-
-  return diffInDays === 1;
-}
-
-
-
-
-
-/* ===============================
-   ADD TASK (LOGIN USER ONLY)
-================================ */
-addTaskInput.addEventListener("keypress", async (e) => {
-  if (e.key !== "Enter") return;
-
-  const title = addTaskInput.value.trim();
-  if (!title) return;
-
-  if (!auth.currentUser) {
-    alert("Login first");
-    return;
-  }
-
-  try {
-    let checkHasDueDate = false
-
-    if(dueDate !== null){
-      checkHasDueDate = true
-    }
-
-    console.log(checkHasDueDate)
-    await addDoc(collection(db, "tasks"), {
-      title,
-      completed: false,
-      important: false,
-      isMyDay: true,
-      dueDate: dueDate,
-      hasDueToday: checkHasDueDate,
-      isOverDue: false,
-      formattedDueDate: formatted,
-      userId: auth.currentUser.uid,
-      createdAt: new Date()
-    });
-
-    dueDate = null;
-
-    addTaskInput.value = "";
-  } catch (err) {
-    console.error("Add task error:", err);
-  }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  const calendarDropdownItem = document.querySelectorAll(".calendarDropdownItem");
-  const calendarWrapper = document.getElementById("calendarWrapper");
-  const calendarDropdown = document.getElementById("calendarDropdown");
-  const taskDate = document.getElementById("taskDate");
-  // const today = document.getElementById("today");
-  // const tomorrow = document.getElementById("tomorrow");
-  // const nextWeekMon = document.getElementById("nextWeekMon");
-  const days = [document.getElementById("today"), document.getElementById("tomorrow"), document.getElementById("nextWeekMon")]
-  const dates = [()=> getToday("forDropdown", "forSetToday"), ()=> getTomorrow("forDropdown", "forSetTomorrow"),()=> getNextMonday("forDropdown", "forSetnextWeekMon")]
-
-  // Toggle dropdown
-  calendarWrapper.addEventListener("click", (e) => {
-    e.stopPropagation();
-    console.log("Dropdown clicked");
-    for(let i = 0; i < days.length; i++){
-    days[i].innerHTML = dates[i]();
-    }
-    calendarDropdown.classList.toggle("open");
-  });
-
-
-  calendarDropdownItem.forEach((item, i)=>{
-    item.addEventListener('click', ()=>{
-       dates[i]();
-    })
-  })
-
-  // for(let i = 0; i < days.length; i++){
-  //   // console.log(dates, days[i])
-  //   days[i].addEventListener('click', ()=>{
-  //     console.log("s")
-  //   })
-  // }
-
-  document.addEventListener("click", () => {
-    calendarDropdown.classList.remove("open");
-  });
-
-  // flatpickr custom calendar
-  flatpickr(taskDate, {
-    minDate: "today",       // past dates disable
-    dateFormat: "Y-m-d",    // backend/save ke liye
-    altInput: true,         // visible input ko custom format ke liye
-    altFormat: "D, F, d",   // frontend me "Sat, January, 31"
-    allowInput: true,
-    wrap: false,
-    defaultDate: null,
-    // Styling using theme colors
-    onReady: function(selectedDates, dateStr, instance) {
-      instance.calendarContainer.classList.add("calendar-theme");
-    },
-    // Date select hone par
-    onChange: function(selectedDates, dateStr, instance) {
-      dueDate = dateStr; // ISO format: "2026-01-31"
-      console.log("Due date (ISO for save):", dueDate);
-
-      // Optional: frontend formatted version
-      if (selectedDates.length > 0) {
-        console.log()
-        const options = { weekday: 'short', month: 'long', day: 'numeric' };
-        formatted = selectedDates[0].toLocaleDateString('en-US', options);
-        console.log("Formatted date for display:", formatted); // "Sat, January, 31"
-      }
-    }
-  });
-});
-
-
-// const loader = document.getElementById("loader");
-
-/* ===============================
-   AUTH STATE + REALTIME TASKS
-================================ */
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    taskList.innerHTML = "<p>Please login</p>";
-    taskCategory.innerHTML = "";
-    return;
-  }
-
-  // loader.style.display = "flex";
-
-  const tasksQuery = query(
-    collection(db, "tasks"),
-    where("userId", "==", user.uid),
-    orderBy("createdAt", "desc")
-  );
-
-  onSnapshot(tasksQuery, (snapshot) => {
-    
-    taskList.innerHTML = "";
-    taskCategory.innerHTML = "";
-
-    const completedTasks = [];
-
-    snapshot.docs.forEach((docSnap) => {
-      const task = { id: docSnap.id, ...docSnap.data() };
-
-      if (task.completed) {
-        completedTasks.push(task);
-      } else {
-        checkIsOverDue(task)
-        taskList.appendChild(createTaskElement(task));
-      }
-      
-    });
-
-    if (completedTasks.length > 0) {
-      renderCompletedSection(completedTasks);
-    }
-
-    requestAnimationFrame(() => lucide.createIcons());
-    // loader.style.display = "none"; 
-  });
-});
-
-/* ===============================
-   CREATE TASK ELEMENT (REUSABLE)
-================================ */
+// -------------------- Task Rendering --------------------
 function createTaskElement(task) {
+  console.log(task.createdDate === getToday().iso)
+  
   const taskEl = document.createElement("div");
   taskEl.className = "task";
 
   taskEl.innerHTML = `
     <div class="task-check">
-      <i data-lucide="${task.completed ? "circle-check" : "circle"}"
-         onclick="toggleComplete('${task.id}', ${task.completed})"
-         stroke-width="1.5"
-         style="color:#2563eb"></i>
-    </div>
+  <i 
+    data-lucide="${task.completed ? "circle-check" : "circle"}" 
+    onclick="toggleComplete('${task.id}', ${task.completed})"
+    stroke-width="1.5"
+    style="color:#2563eb">
+  </i>
+</div>
+
 
     <div class="task-info">
       <p class="task-title">${task.title}</p>
 
       <div class="task-description">
         <p class="task-type">tasks</p>
-
         ${task.isMyDay ? metaItem("sun-medium", "My Day", task) : ""}
         ${task.hasDueToday ? metaItem("calendar-days", "Today", task) : ""}
         ${task.hasReminder ? metaItem("bell", "Reminder", task) : ""}
@@ -433,27 +191,41 @@ function createTaskElement(task) {
          onclick="toggleImportant('${task.id}', ${task.important})"></i>
     </div>
   `;
-
-  return taskEl;
+  
+  return taskEl || "";
+  
 }
 
-/* ===============================
-   META ITEM (SMALL HELPER)
-================================ */
 function metaItem(icon, text, task) {
-  // console.log(task.isOverDue, " ", icon === "calender-days", " " , text, " " , icon)
+  const isCalendar = icon === "calendar-days";
+  const isOverdue = isCalendar && task.isOverDue;
+
+  let displayText = text;
+
+  if (isCalendar) {
+    const dueStatus = isTaskDueTodayOrTomorrow(task.dueDate);
+
+    if (isOverdue) {
+      displayText = "Overdue " + task.formattedDueDate;
+    } else if (dueStatus === 0) {
+      displayText = "Today";
+    } else if (dueStatus === 1) {
+      displayText = "Tomorrow";
+    } else {
+      displayText = "Due " + task.formattedDueDate;
+    }
+  }
+
   return `
     <span class="task-separator"></span>
     <div class="task-meta-item">
-      <i data-lucide="${icon}" style="${(icon === 'calendar-days' && task.isOverDue == true) ? 'color:red;' : ''}" stroke-width="1.5"></i>
-      <p style="${(icon === 'calendar-days' && task.isOverDue == true) ? 'color:red;' : ''}">${(icon === 'calendar-days' && task.isOverDue == true) ? "Overdue" + " " + task.formattedDueDate : text} </p>
+      <i data-lucide="${icon}" style="${isOverdue ? "color:red;" : ""}" stroke-width="1.5"></i>
+      <p style="${isOverdue ? "color:red;" : ""}">${displayText}</p>
     </div>
   `;
 }
 
-/* ===============================
-   COMPLETED SECTION
-================================ */
+
 function renderCompletedSection(tasks) {
   const wrapper = document.createElement("div");
 
@@ -465,10 +237,8 @@ function renderCompletedSection(tasks) {
       <p class="task-category-title">Completed</p>
       <p class="task-category-count">${tasks.length}</p>
     </div>
-
     <div class="task-category-body" style="display:none"></div>
   `;
-
   const header = wrapper.querySelector(".task-category-header");
   const body = wrapper.querySelector(".task-category-body");
 
@@ -476,32 +246,25 @@ function renderCompletedSection(tasks) {
     const isOpen = body.style.display === "block";
     body.style.display = isOpen ? "none" : "block";
     header.classList.toggle("active");
-
     if (!isOpen && body.children.length === 0) {
-      tasks.forEach(task => {
-        body.appendChild(createTaskElement(task));
-      });
+      tasks.forEach((task) => body.appendChild(createTaskElement(task)));
       requestAnimationFrame(() => lucide.createIcons());
     }
   });
-
   taskCategory.appendChild(wrapper);
 }
 
-/* ===============================
-   UPDATE FUNCTIONS
-================================ */
+// -------------------- Event Handlers --------------------
 const completeSound = new Audio("../assets/ding-sound-effect_2.mp3");
-completeSound.volume = 0.6; 
+completeSound.volume = 0.6;
+
 window.toggleComplete = async (id, status) => {
   try {
     if (!status) {
-      completeSound.currentTime = 0; // restart sound
+      completeSound.currentTime = 0;
       completeSound.play().catch(() => {});
     }
-    await updateDoc(doc(db, "tasks", id), {
-      completed: !status
-    });
+    await updateDoc(doc(db, "tasks", id), { completed: !status });
   } catch (err) {
     console.error("Toggle complete error:", err);
   }
@@ -509,9 +272,7 @@ window.toggleComplete = async (id, status) => {
 
 window.toggleImportant = async (id, status) => {
   try {
-    await updateDoc(doc(db, "tasks", id), {
-      important: !status
-    });
+    await updateDoc(doc(db, "tasks", id), { important: !status });
   } catch (err) {
     console.error("Toggle important error:", err);
   }
@@ -525,66 +286,179 @@ window.deleteTask = async (id) => {
   }
 };
 
+// -------------------- Calendar Dropdown --------------------
+function setupCalendarDropdown() {
+  const calendarItems = document.querySelectorAll(".calendarDropdownItem");
+  const dayFunctions = [getToday, getTomorrow, getNextMonday];
 
-sortBtn.addEventListener("click", (e) => {
-  e.stopPropagation(); // bahar click se safe
-  sortBtn.classList.toggle("open");
-});
+  calendarWrapper.addEventListener("click", (e) => {
+    e.stopPropagation();
+    calendarDropdown.classList.toggle("open");
+    dayFunctions.forEach((fn, i) => {
+      document.getElementById(
+        ["today", "tomorrow", "nextWeekMon"][i],
+      ).innerHTML = fn().day;
+    });
+  });
 
-/* Bahar click par band ho */
-document.addEventListener("click", () => {
-  sortBtn.classList.remove("open");
-});
+  calendarItems.forEach((item, i) => {
+    item.addEventListener("click", () => {
+      const existing = calendarWrapper.querySelector("p");
+      if (existing) existing.remove();
+      const para = document.createElement("p");
+      const { iso, label, day, formattedDisplayDate } = dayFunctions[i]();
+      para.innerHTML = label;
+      taskDueDate = iso;
+      formattedDueDate = formattedDisplayDate;
+      calendarWrapper.insertAdjacentElement("beforeend", para);
+      calendarWrapper.style.border = "1px solid #e1dfdd";
+    });
+  });
 
+  document.addEventListener("click", () =>
+    calendarDropdown.classList.remove("open"),
+  );
+}
 
-// document.addEventListener("DOMContentLoaded", () => {
-//   const calendarWrapper = document.getElementById("calendarWrapper");
-//   const calendarDropdown = document.getElementById("calendarDropdown");
-//   const taskDate = document.getElementById("taskDate");
+// -------------------- Flatpickr --------------------
+function setupFlatpickr() {
+  flatpickr(taskDateInput, {
+    minDate: "today",
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "D, F, d",
+    allowInput: true,
+    wrap: false,
+    defaultDate: null,
+    onReady: function (selectedDates, dateStr, instance) {
+      instance.calendarContainer.classList.add("calendar-theme");
+    },
+    onChange: function (selectedDates, dateStr, instance) {
+      taskDueDate = dateStr;
+      const existing = calendarWrapper.querySelector("p");
+      if (existing) existing.remove();
+      const para = document.createElement("p");
+      para.innerHTML = taskDueDate;
+      calendarWrapper.insertAdjacentElement("beforeend", para);
+      calendarWrapper.style.border = "1px solid #e1dfdd";
+      if (selectedDates.length > 0)
+        formattedDueDate = selectedDates[0].toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "long",
+          day: "numeric",
+        });
+        console.log(formattedDueDate)
+    },
+  });
+}
 
-//   // Toggle dropdown
-//   calendarWrapper.addEventListener("click", (e) => {
-//     e.stopPropagation();
-//     console.log("Dropdown clicked");
-//     calendarDropdown.classList.toggle("open");
-//   });
+// -------------------- Add Task --------------------
+addTaskInput.addEventListener("keypress", async (e) => {
+  if (e.key !== "Enter") return;
+  const title = addTaskInput.value.trim();
+  if (!title) return;
+  if (!auth.currentUser) {
+    alert("Login first");
+    return;
+  }
 
-//   document.addEventListener("click", () => {
-//     calendarDropdown.classList.remove("open");
-//   });
-
-//   // flatpickr custom calendar
-//   flatpickr(taskDate, {
-//     minDate: "today",       // disable past dates
-//     dateFormat: "Y-m-d",
-//     allowInput: true,
-//     wrap: false,
-//     defaultDate: null,
-//     // Styling using theme colors
-//     onReady: function(selectedDates, dateStr, instance) {
-//       instance.calendarContainer.classList.add("calendar-theme");
-//     },
-//     // ✅ Date select hone par console me print
-//     onChange: function(selectedDates, dateStr, instance) {
-//       console.log("Selected date:", dateStr);
-//     }
-//   });
-// });
-
-
-
-
-const logoutBtn = document.getElementById("logoutBtn");
-
-logoutBtn.addEventListener("click", async () => {
   try {
-    await signOut(auth);
-    console.log("User logged out successfully");
-    window.location.href = "../auth/login.html"
-  } catch (error) {
-    console.error("Logout error:", error);
+    const hasDue = taskDueDate !== null;
+    const existing = calendarWrapper.querySelector("p");
+    if (existing) existing.remove();
+    calendarWrapper.style.border = "";
+    addTaskInput.value = "";
+
+    await addDoc(collection(db, "tasks"), {
+      title,
+      completed: false,
+      important: false,
+      isMyDay: true,
+      dueDate: taskDueDate,
+      hasDueToday: hasDue,
+      isOverDue: false,
+      formattedDueDate: formattedDueDate,
+      userId: auth.currentUser.uid,
+      createdAt: new Date(),
+      createdDate: getToday().iso,
+    });
+
+    taskDueDate = null;
+  } catch (err) {
+    console.error("Add task error:", err);
   }
 });
 
+// -------------------- Auth & Task Snapshot --------------------
+onAuthStateChanged(auth, (user) => {
+  const loader = document.querySelector(".loader");
+  const noTaskImage = document.querySelector(".no-tasks-image");
 
+  if (!user) {
+    taskList.innerHTML = "<p>Please login</p>";
+    taskCategory.innerHTML = "";
+    return;
+  }
 
+  loader.style.display = "block";
+
+  const tasksQuery = query(
+    collection(db, "tasks"),
+    where("userId", "==", user.uid),
+    orderBy("createdAt", "desc"),
+  );
+  console.log(tasksQuery)
+  onSnapshot(tasksQuery, (snapshot) => {
+    if(snapshot.docs.length == 0){
+      loader.style.display = "none";
+      console.log("Aaaa")
+      noTaskImage.style.display = "block"
+    }else{
+      loader.style.display = "none";
+      console.log("Aaaa")
+      noTaskImage.style.display = "none"
+    }
+    taskList.innerHTML = "";
+    taskCategory.innerHTML = "";
+    const completedTasks = [];
+
+  
+
+    snapshot.docs.forEach((docSnap) => {
+      const task = { id: docSnap.id, ...docSnap.data() };
+      if (task.completed) {
+        completedTasks.push(task);
+      } else {
+        updateOverdueStatus(task);
+        console.log(task.createdDate == getToday().iso)
+        if(task.createdDate === getToday().iso){
+          console.log("hamza")
+        taskList.appendChild(createTaskElement(task));
+        }
+      }
+    });
+
+    if (completedTasks.length > 0) renderCompletedSection(completedTasks);
+    requestAnimationFrame(() => lucide.createIcons());
+  });
+});
+
+// -------------------- Logout & Sort --------------------
+logoutBtn.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    window.location.href = "../auth/login.html";
+  } catch (err) {
+    console.error("Logout error:", err);
+  }
+});
+
+sortBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  sortBtn.classList.toggle("open");
+});
+document.addEventListener("click", () => sortBtn.classList.remove("open"));
+
+// -------------------- Initialize --------------------
+setupCalendarDropdown();
+setupFlatpickr();
