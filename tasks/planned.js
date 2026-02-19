@@ -1,5 +1,18 @@
-import { db, auth, doc, updateDoc, addDoc, signOut, onAuthStateChanged, query, where, collection, orderBy, onSnapshot } from "../src/firebase.js";
-import { getToday, isTaskOverdue } from "./helpers/date-utils.js";
+import {
+  db,
+  auth,
+  doc,
+  updateDoc,
+  addDoc,
+  signOut,
+  onAuthStateChanged,
+  query,
+  where,
+  collection,
+  orderBy,
+  onSnapshot,
+} from "../src/firebase.js";
+import { getToday, isTaskOverdue, getTomorrow } from "./helpers/date-utils.js";
 import { createTaskElement, renderTaskCategories, showTaskSkeletons, showEmptyState } from "./helpers/task-render.js";
 import { setupCalendarDropdown, setupFlatpickr } from "./helpers/calendar-ui.js";
 import { toggleComplete, toggleImportant, deleteTask } from "./helpers/task-actions.js";
@@ -7,15 +20,16 @@ import { toggleComplete, toggleImportant, deleteTask } from "./helpers/task-acti
 export let taskDueDate = null;
 export let formattedDueDate = "";
 
+
 const addTaskInput = document.getElementById("addtask");
 const taskList = document.querySelector(".task-list");
-const taskCompleted = document.querySelector(".task-completed");
+const taskEarlier = document.querySelector(".task-earlier");
+const taskToday = document.querySelector(".task-today");
+const taskTomorrow = document.querySelector(".task-tomorrow")
+const taskLater = document.querySelector(".task-later");
 const calendarWrapper = document.getElementById("calendarWrapper");
 const logoutBtn = document.getElementById("logoutBtn");
 const sortBtn = document.getElementById("sortBtn");
-const todayDisplayDate = document.getElementById("today-display-date");
-
-todayDisplayDate.innerHTML = `${getToday().formattedDisplayDate}`;
 
 setupCalendarDropdown((iso, formatted) => {
   taskDueDate = iso;
@@ -33,7 +47,7 @@ async function updateOverdueStatus(task) {
   await updateDoc(docRef, { isOverDue: isTaskOverdue(task.dueDate) });
 }
 
-// Add task on Enter key press
+// -------------------- Add Task --------------------
 addTaskInput.addEventListener("keypress", async (e) => {
   if (e.key !== "Enter") return;
   const title = addTaskInput.value.trim();
@@ -42,6 +56,10 @@ addTaskInput.addEventListener("keypress", async (e) => {
     alert("Login first");
     return;
   }
+
+  const finalDueDate = taskDueDate ?? getToday().iso;
+  const finalFormattedDate =
+    formattedDueDate || getToday().formattedDisplayDate;
 
   try {
     const hasDue = taskDueDate !== null;
@@ -55,10 +73,10 @@ addTaskInput.addEventListener("keypress", async (e) => {
       completed: false,
       important: false,
       isMyDay: true,
-      dueDate: taskDueDate,
+      dueDate: finalDueDate,
       hasDue: hasDue,
       isOverDue: false,
-      formattedDueDate: formattedDueDate,
+      formattedDueDate: finalFormattedDate,
       userId: auth.currentUser.uid,
       createdAt: new Date(),
       createdDate: getToday().iso,
@@ -66,19 +84,18 @@ addTaskInput.addEventListener("keypress", async (e) => {
 
     taskDueDate = null;
   } catch (err) {
-    console.error("Error adding task:", err);
+    console.error(err);
   }
 });
 
-// Authentication state listener
 onAuthStateChanged(auth, (user) => {
+  showTaskSkeletons(taskList, 6);
   if (!user) {
     taskList.innerHTML = "<p>Please login</p>";
-    taskCompleted.innerHTML = "";
+    taskEarlier.innerHTML = "";
     return;
   }
 
-  showTaskSkeletons(taskList, 6);
 
   const tasksQuery = query(
     collection(db, "tasks"),
@@ -86,44 +103,73 @@ onAuthStateChanged(auth, (user) => {
     orderBy("createdAt", "desc"),
   );
 
+  console.log(user.uid)
+
   onSnapshot(tasksQuery, (snapshot) => {
     taskList.innerHTML = "";
-    taskCompleted.innerHTML = "";
-    const completedTasks = [];
-    let hasTodayTasks = false;
-    let animIndex = 0;
+    taskEarlier.innerHTML = "";
+    taskToday.innerHTML = "";
+    taskTomorrow.innerHTML = "";
+    taskLater.innerHTML = "";
+
+    const earlierTasks = [];
+    const todayTasks = [];
+    const tomorrowTasks = []
+    const laterTasks = [];
     let renderedCount = 0;
 
     snapshot.docs.forEach((docSnap) => {
       const task = { id: docSnap.id, ...docSnap.data() };
-
-      if (task.completed && task.createdDate === getToday().iso) {
-        hasTodayTasks = true;
-        completedTasks.push(task);
-      } else {
-        updateOverdueStatus(task);
-        if (task.createdDate === getToday().iso) {
-          hasTodayTasks = true;
-          const el = createTaskElement(task);
-          el.classList.add("task-anim");
-          el.style.animationDelay = `${animIndex * 0.05}s`;
-          taskList.appendChild(el);
-          animIndex++;
-          renderedCount++;
-        }
+      const todayIso = getToday().iso;
+      const tomorrowIso = getTomorrow().iso
+      //   updateOverdueStatus(task);
+      console.log(getTomorrow().iso)
+      if (task.isOverDue && !task.completed) {
+        earlierTasks.push(task);
+      } else if (task.dueDate === todayIso && !task.completed) {
+        todayTasks.push(task);
+      } else if (task.dueDate === tomorrowIso && !task.completed) {
+        tomorrowTasks.push(task);
+      } else if ((task.dueDate > todayIso && task.dueDate > tomorrowIso) && (task.dueDate !== null && !task.completed)) {
+        laterTasks.push(task);
       }
     });
 
-    if (renderedCount === 0) {
-      showEmptyState(taskList, "My Day");
+    // loader.style.display = "none";
+
+    // if (hasTodayTasks) {
+    //   noTaskImage.style.display = "none";
+    // } else {
+    //   noTaskImage.style.display = "block";
+    // }
+    if (earlierTasks.length) {
+      renderTaskCategories(earlierTasks, taskEarlier, "Earlier");
+      renderedCount++;
     }
 
-    // Logic removed
-    if (completedTasks.length > 0)
-      renderTaskCategories(completedTasks, taskCompleted, "Completed");
+    if (todayTasks.length) {
+      renderTaskCategories(todayTasks, taskToday, "Today");
+      renderedCount++;
+    }
+
+    if (laterTasks.length) {
+      renderTaskCategories(laterTasks, taskLater, "Later");
+      renderedCount++;
+    }
+
+    if (tomorrowTasks.length) {
+      renderTaskCategories(tomorrowTasks, taskTomorrow, "Tomorrow");
+      renderedCount++;
+    }
+
+    if (renderedCount === 0) {
+      showEmptyState(taskList, "Planned");
+    }
+
     requestAnimationFrame(() => lucide.createIcons());
   });
 });
+
 
 // -------------------- Logout & Sort --------------------
 if (logoutBtn) {
@@ -137,8 +183,10 @@ if (logoutBtn) {
   });
 }
 
-sortBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  sortBtn.classList.toggle("open");
-});
-document.addEventListener("click", () => sortBtn.classList.remove("open"));
+if (sortBtn) {
+  sortBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sortBtn.classList.toggle("open");
+  });
+  document.addEventListener("click", () => sortBtn.classList.remove("open"));
+}

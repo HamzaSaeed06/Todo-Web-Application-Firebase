@@ -1,3 +1,16 @@
+// Theme Initialization
+const savedTheme = localStorage.getItem("theme") || "light";
+document.documentElement.setAttribute("data-theme", savedTheme);
+
+// Updates auth logos based on active theme
+function updateAuthLogo(theme) {
+  const isDark = theme === "dark";
+  const logoSrc = isDark ? "../assets/tick-light.svg" : "../assets/tick-black.svg";
+  const logoImg = document.querySelector(".auth-logo img");
+  if (logoImg) logoImg.src = logoSrc;
+}
+updateAuthLogo(savedTheme);
+
 import {
   auth,
   signInWithEmailAndPassword,
@@ -15,12 +28,24 @@ const loginBtn = document.getElementById("loginBtn");
 const googleBtn = document.getElementById("googleBtn");
 const githubBtn = document.getElementById("githubBtn");
 
+// -----------------------------------------------------------------------------
+//  LOGIN HANDLER
+// -----------------------------------------------------------------------------
+/**
+ * Handles the standard email/password login flow.
+ */
 loginBtn.addEventListener("click", async () => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
   if (!email || !password)
     return Swal.fire("Error", "All fields required", "error");
+
+  // Email Validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return Swal.fire("Error", "Please enter a valid email address", "error");
+  }
 
   try {
     showLoader(loginBtn, "Logging in");

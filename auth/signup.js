@@ -1,3 +1,16 @@
+// Theme Initialization
+const savedTheme = localStorage.getItem("theme") || "light";
+document.documentElement.setAttribute("data-theme", savedTheme);
+
+// Updates auth logos based on active theme
+function updateAuthLogo(theme) {
+  const isDark = theme === "dark";
+  const logoSrc = isDark ? "../assets/tick-light.svg" : "../assets/tick-black.svg";
+  const logoImg = document.querySelector(".auth-logo img");
+  if (logoImg) logoImg.src = logoSrc;
+}
+updateAuthLogo(savedTheme);
+
 import {
   auth,
   db,
@@ -63,8 +76,29 @@ signupBtn.addEventListener("click", async () => {
   const password = document.getElementById("password").value;
   const fullName = document.getElementById("fullName").value.trim();
 
-  if (!email || !password)
+  if (!email || !password || !fullName)
     return Swal.fire("Error", "All fields are required", "error");
+
+  // Regex check for basic email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return Swal.fire("Error", "Please enter a valid email address", "error");
+  }
+
+  // Enforce strong password policy
+  const passwordCriteria = [
+    { regex: /.{8,}/, message: "Password must be at least 8 characters long" },
+    { regex: /[A-Z]/, message: "Password must contain at least one uppercase letter" },
+    { regex: /[a-z]/, message: "Password must contain at least one lowercase letter" },
+    { regex: /[0-9]/, message: "Password must contain at least one number" },
+    { regex: /[!@#$%^&*(),.?":{}|<>]/, message: "Password must contain at least one special character (!@#...)" }
+  ];
+
+  for (const criterion of passwordCriteria) {
+    if (!criterion.regex.test(password)) {
+      return Swal.fire("Weak Password", criterion.message, "warning");
+    }
+  }
 
   try {
     showLoader(signupBtn, "Creating account...");
@@ -104,16 +138,17 @@ googleBtn.addEventListener("click", async () => {
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
 
-if (!snap.exists()) {
+    if (!snap.exists()) {
 
-  await setDoc(ref, {
-    fullname: user.displayName || "",
-    email: user.email,
-    provider: "google",
-    createdAt: Date.now(),
-  });
-}
-  
+      await setDoc(ref, {
+        fullname: user.displayName || "",
+        email: user.email,
+        provider: "google",
+        avatarUrl: user.photoURL || null,
+        createdAt: Date.now(),
+      });
+    }
+
 
     Swal.fire("Success", "Signed in with Google!", "success").then(() => {
       window.location.href = "../tasks/myday.html";
@@ -135,15 +170,16 @@ githubBtn.addEventListener("click", async () => {
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
 
-if (!snap.exists()) {
+    if (!snap.exists()) {
 
-  await setDoc(ref, {
-    fullname: user.displayName || "",
-    email: user.email,
-    provider: "google",
-    createdAt: Date.now(),
-  });
-}
+      await setDoc(ref, {
+        fullname: user.displayName || "",
+        email: user.email,
+        provider: "github",
+        avatarUrl: user.photoURL || null,
+        createdAt: Date.now(),
+      });
+    }
 
     Swal.fire("Success", "Signed in with GitHub!", "success").then(() => {
       window.location.href = "../tasks/myday.html";

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile - Todo App</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/tick-light.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <link rel="stylesheet" href="../tasks/style.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+        })();
+    </script>
+</head>
+
+<body>
+    <div id="app">
+        <div id="topbar">
+            <nav class="nav-bar">
+                <div class="nav-left">
+                    <a href="../tasks/myday.html" class="back-btn">
+                        <i data-lucide="arrow-left"></i>
+                    </a>
+                    <h2 class="top-bar-heading">Profile</h2>
+                </div>
+                <div class="profile skeleton skeleton-circle">
+                    <img src="" width="30" height="30" alt="" style="visibility: hidden;" />
+                </div>
+            </nav>
+        </div>
+
+        <div id="sidebar"></div>
+
+        <div id="content">
+            <!-- Profile Header Section -->
+            <div class="profile-header-container">
+                <div class="profile-banner">
+                    <img id="profileBannerImg" src="" alt="Banner" />
+                    <button class="banner-edit-btn" id="bannerEditBtn">
+                        <i data-lucide="camera"></i>
+                        <span>Edit Cover</span>
+                    </button>
+                    <input type="file" id="bannerInput" accept="image/*" style="display: none;" />
+                </div>
+
+                <div class="profile-main-info">
+                    <div class="profile-avatar-wrapper">
+                        <img id="profileAvatarImg" src="" alt="Avatar" class="profile-avatar-img" />
+                        <button class="avatar-edit-btn" id="avatarEditBtn">
+                            <i data-lucide="camera"></i>
+                        </button>
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;" />
+                    </div>
+
+                    <div class="profile-user-content">
+                        <div class="profile-name-row">
+                            <h1 class="profile-user-name" data-field="fullname"></h1>
+                            <div class="profile-edit-actions">
+                                <button id="cancelProfileBtn" class="btn-cancel" style="display: none;">
+                                    <i data-lucide="circle-x"></i>
+                                    <span>Cancel</span>
+                                </button>
+                                <button id="editProfileBtn" class="btn-outline">
+                                    <i data-lucide="edit-3"></i>
+                                    <span>Edit Profile</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Details Section (Restored) -->
+            <div class="profile-details-grid">
+                <div class="profile-card info-card">
+                    <h2 class="card-title">Personal Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <i data-lucide="user"></i>
+                            <div class="info-text">
+                                <span class="info-label">Gender</span>
+                                <span class="info-value" data-field="gender"></span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="calendar"></i>
+                            <div class="info-text">
+                                <span class="info-label">Date of Birth</span>
+                                <span class="info-value" data-field="dob"></span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="globe"></i>
+                            <div class="info-text">
+                                <span class="info-label">Language</span>
+                                <span class="info-value" data-field="language"></span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="clock"></i>
+                            <div class="info-text">
+                                <span class="info-label">Timezone</span>
+                                <span class="info-value" data-field="timezone"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-card contact-card">
+                    <h2 class="card-title">Contact Details</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <i data-lucide="phone"></i>
+                            <div class="info-text">
+                                <span class="info-label">Phone Number</span>
+                                <span class="info-value" data-field="phone"></span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="mail"></i>
+                            <div class="info-text">
+                                <span class="info-label">Email</span>
+                                <span class="info-value" data-field="email"></span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="map-pin"></i>
+                            <div class="info-text">
+                                <span class="info-label">Location</span>
+                                <span class="info-value" data-field="location"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-card bio-card">
+                    <h2 class="card-title">About Me</h2>
+                    <p class="bio-text" data-field="bio"></p>
+                </div>
+
+                <div class="profile-card settings-card">
+                    <h2 class="card-title">Preferences</h2>
+                    <div class="settings-list">
+                        <div class="settings-item">
+                            <i data-lucide="bell"></i>
+                            <span>Notifications</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="settings-item">
+                            <i data-lucide="sun-medium"></i>
+                            <span>Dark Mode</span>
+                            <label class="switch">
+                                <input type="checkbox" id="darkModeSwitch">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+</body>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script type="module" src="../tasks/sidebar.js"></script>
+<script type="module" src="profile.js"></script>
+
+</html>

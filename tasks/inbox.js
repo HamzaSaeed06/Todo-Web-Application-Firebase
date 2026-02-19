@@ -1,4 +1,4 @@
-import { db, auth, doc, updateDoc, addDoc, signOut, onAuthStateChanged, query, where, collection, orderBy, onSnapshot } from "../src/firebase.js";
+import { db, auth, doc, updateDoc, addDoc, onAuthStateChanged, query, where, collection, orderBy, onSnapshot } from "../src/firebase.js";
 import { getToday, isTaskOverdue } from "./helpers/date-utils.js";
 import { createTaskElement, renderTaskCategories, showTaskSkeletons, showEmptyState } from "./helpers/task-render.js";
 import { setupCalendarDropdown, setupFlatpickr } from "./helpers/calendar-ui.js";
@@ -13,9 +13,7 @@ const taskCompleted = document.querySelector(".task-completed");
 const calendarWrapper = document.getElementById("calendarWrapper");
 const logoutBtn = document.getElementById("logoutBtn");
 const sortBtn = document.getElementById("sortBtn");
-const todayDisplayDate = document.getElementById("today-display-date");
 
-todayDisplayDate.innerHTML = `${getToday().formattedDisplayDate}`;
 
 setupCalendarDropdown((iso, formatted) => {
   taskDueDate = iso;
@@ -33,7 +31,7 @@ async function updateOverdueStatus(task) {
   await updateDoc(docRef, { isOverDue: isTaskOverdue(task.dueDate) });
 }
 
-// Add task on Enter key press
+// -------------------- Add Task --------------------
 addTaskInput.addEventListener("keypress", async (e) => {
   if (e.key !== "Enter") return;
   const title = addTaskInput.value.trim();
@@ -45,6 +43,7 @@ addTaskInput.addEventListener("keypress", async (e) => {
 
   try {
     const hasDue = taskDueDate !== null;
+    const checkToday = taskDueDate === getToday().iso;
     const existing = calendarWrapper.querySelector("p");
     if (existing) existing.remove();
     calendarWrapper.style.border = "";
@@ -54,31 +53,34 @@ addTaskInput.addEventListener("keypress", async (e) => {
       title,
       completed: false,
       important: false,
-      isMyDay: true,
+      isMyDay: checkToday || "",
       dueDate: taskDueDate,
       hasDue: hasDue,
       isOverDue: false,
       formattedDueDate: formattedDueDate,
       userId: auth.currentUser.uid,
       createdAt: new Date(),
-      createdDate: getToday().iso,
+      createdDate: `${checkToday ? getToday().iso : ""}`,
     });
 
     taskDueDate = null;
   } catch (err) {
-    console.error("Error adding task:", err);
+    console.error(err);
   }
 });
 
-// Authentication state listener
+// -------------------- Auth & Task Snapshot --------------------
 onAuthStateChanged(auth, (user) => {
+  showTaskSkeletons(taskList, 6);
+  const noTaskImage = document.querySelector(".no-tasks-image");
+
   if (!user) {
     taskList.innerHTML = "<p>Please login</p>";
     taskCompleted.innerHTML = "";
     return;
   }
 
-  showTaskSkeletons(taskList, 6);
+  // No legacy loader needed
 
   const tasksQuery = query(
     collection(db, "tasks"),
@@ -97,28 +99,26 @@ onAuthStateChanged(auth, (user) => {
     snapshot.docs.forEach((docSnap) => {
       const task = { id: docSnap.id, ...docSnap.data() };
 
-      if (task.completed && task.createdDate === getToday().iso) {
+      if (task.completed) {
         hasTodayTasks = true;
         completedTasks.push(task);
       } else {
         updateOverdueStatus(task);
-        if (task.createdDate === getToday().iso) {
-          hasTodayTasks = true;
-          const el = createTaskElement(task);
-          el.classList.add("task-anim");
-          el.style.animationDelay = `${animIndex * 0.05}s`;
-          taskList.appendChild(el);
-          animIndex++;
-          renderedCount++;
-        }
+        hasTodayTasks = true;
+        const el = createTaskElement(task);
+        el.classList.add("task-anim");
+        el.style.animationDelay = `${animIndex * 0.05}s`;
+        taskList.appendChild(el);
+        animIndex++;
+        renderedCount++;
       }
     });
 
     if (renderedCount === 0) {
-      showEmptyState(taskList, "My Day");
+      showEmptyState(taskList, "Tasks");
     }
 
-    // Logic removed
+    // loader/noTaskImage logic removed
     if (completedTasks.length > 0)
       renderTaskCategories(completedTasks, taskCompleted, "Completed");
     requestAnimationFrame(() => lucide.createIcons());

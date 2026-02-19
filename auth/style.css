@@ -1,41 +1,59 @@
-/* =============================
-   DESIGN SYSTEM
-============================= */
+/* Design System Variables */
 :root {
   --bg-color: #f4f6fb;
   --card-bg: #ffffff;
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
-  --text-color: #111827;
-  --muted-text: #6b7280;
+  --text-primary: #111827;
+  --text-muted: #6b7280;
   --border-color: #e5e7eb;
-
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
-
+  --btn-radius: 6px;
   --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
-  --transition: all 0.25s ease;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* =============================
-   GLOBAL
-============================= */
+[data-theme="dark"] {
+  --bg-color: #09090b;
+  --card-bg: #0f0f12;
+  --text-primary: #d4d4d8;
+  --text-muted: #52525b;
+  --border-color: #18181b;
+  --primary-color: #3b82f6;
+  --primary-hover: #60a5fa;
+  --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* GitHub logo theme swapping */
+.github-logo-light {
+  display: none;
+}
+
+[data-theme="dark"] .github-logo-dark {
+  display: none;
+}
+
+[data-theme="dark"] .github-logo-light {
+  display: block;
+}
+
+/* Global Styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 body {
   background-color: var(--bg-color);
-  color: var(--text-color);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* =============================
-   AUTH LAYOUT
-============================= */
+/* Auth Layout */
 .auth-wrapper {
   min-height: 100dvh;
 }
@@ -50,18 +68,15 @@ body {
   border: 1px solid var(--border-color);
 }
 
-/* =============================
-   TITLES
-============================= */
+/* Titles */
 .auth-title {
-  font-size: 1.8rem;
+  font-size: clamp(1.4rem, 4vw, 1.8rem);
   font-weight: 600;
   margin-bottom: 1.5rem;
+  color: var(--text-primary);
 }
 
-/* =============================
-   FORM
-============================= */
+/* Form Elements */
 /* .auth-form {
   width: 100%;
 } */
@@ -74,7 +89,9 @@ body {
   width: 100%;
   padding: 0.75rem 0.85rem;
   border-radius: var(--radius-sm);
+  background-color: var(--card-bg);
   border: 1px solid var(--border-color);
+  color: var(--text-primary);
   font-size: 0.95rem;
   transition: var(--transition);
 }
@@ -106,9 +123,7 @@ body {
 }
 
 
-/* =============================
-   PRIMARY BUTTON
-============================= */
+/* Primary Button */
 .auth-primary-btn {
   width: 100%;
   padding: 0.75rem;
@@ -120,14 +135,12 @@ body {
   transition: var(--transition);
 }
 
-/* .auth-primary-btn:hover {
+.auth-primary-btn:hover {
   background-color: var(--primary-hover);
-  transform: translateY(-1px);
-} */
+  box-shadow: 0 4px 12px var(--accent-blue-soft);
+}
 
-/* =============================
-   DIVIDER
-============================= */
+/* Divider */
 .auth-divider {
   display: flex;
   align-items: center;
@@ -149,9 +162,7 @@ body {
   margin: 0 10px;
 }
 
-/* =============================
-   OAUTH BUTTONS
-============================= */
+/* OAuth Buttons */
 .auth-oauth-buttons {
   display: flex;
   flex-direction: column;
@@ -160,9 +171,9 @@ body {
 
 .oauth-btn {
   width: 100%;
-  height: 44px;
+  height: 48px;
   border: 1px solid var(--border-color);
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -170,6 +181,7 @@ body {
   gap: 10px;
   font-size: 0.9rem;
   font-weight: 500;
+  color: var(--text-primary);
   cursor: pointer;
   transition: var(--transition);
 }
@@ -180,12 +192,11 @@ body {
 }
 
 .oauth-btn:hover {
-  background-color: #f9fafb;
+  background-color: var(--bg-color);
+  border-color: var(--primary-color);
 }
 
-/* =============================
-   FOOTER
-============================= */
+/* Footer */
 .auth-footer-text {
   margin-top: 1.5rem;
   font-size: 0.85rem;
@@ -206,42 +217,62 @@ body {
 
 /* ////////// */
 
-/* From Uiverse.io by barisdogansutcu */ 
+/* From Uiverse.io by barisdogansutcu */
 loader {
- width: 0em;
- transform-origin: center;
- animation: rotate4 0.5s linear infinite;
+  width: 0em;
+  transform-origin: center;
+  animation: rotate4 0.5s linear infinite;
 }
 
-circle {
- fill: none;
- stroke: hsl(217, 16%, 85%);
- stroke-width: 4;
- stroke-dasharray: 1, 200;
- stroke-dashoffset: 0;
- stroke-linecap: round;
- animation: dash4 1.5s ease-in-out infinite;
+.loader circle {
+  fill: none;
+  stroke: hsl(217, 16%, 85%);
+  stroke-width: 4;
+  stroke-dasharray: 1, 200;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  animation: dash4 1.5s ease-in-out infinite;
 }
 
 @keyframes rotate4 {
- 100% {
-  transform: rotate(360deg);
- }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes dash4 {
- 0% {
-  stroke-dasharray: 1, 200;
-  stroke-dashoffset: 0;
- }
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
 
- 50% {
-  stroke-dasharray: 90, 200;
-  stroke-dashoffset: -35px;
- }
+  50% {
+    stroke-dasharray: 90, 200;
+    stroke-dashoffset: -35px;
+  }
 
- 100% {
-  stroke-dashoffset: -125px;
- }
+  100% {
+    stroke-dashoffset: -125px;
+  }
 }
 
+/* SweetAlert2 Theme */
+.swal2-popup {
+  background: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+[data-theme="dark"] .swal2-title {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .swal2-html-container {
+  color: var(--text-muted) !important;
+}
+
+.swal2-confirm {
+  background-color: var(--primary-color) !important;
+  border-radius: var(--radius-sm) !important;
+}

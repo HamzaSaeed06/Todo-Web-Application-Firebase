@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Day - Todo App</title>
+  <title>Planned - Todo App</title>
   <link rel="icon" type="image/svg+xml" href="../assets/tick-light.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -46,30 +46,8 @@
       <div class="content-top">
         <div class="content-left">
           <div class="content-heading">
-            <i data-lucide="sun-medium" stroke-width="1.5"></i>
-            <h2>My Day</h2>
-          </div>
-          <p class="date-day" id="today-display-date">Thursday, January 29</p>
-        </div>
-        <div class="sort" id="sortBtn">
-          <i data-lucide="arrow-down-up" stroke-width="1.5"></i>
-          <p>Sort</p>
-          <div class="sort-menu">
-            <div class="sort-menu-heading">
-              <h4>Sort By</h4>
-            </div>
-            <div class="sort-menu-item">
-              <i data-lucide="calendar-days" stroke-width="1.5"></i>
-              <button>By Date</button>
-            </div>
-            <div class="sort-menu-item">
-              <i data-lucide="calendar-plus" stroke-width="1.5"></i>
-              <button>By Priority</button>
-            </div>
-            <div class="sort-menu-item">
-              <i data-lucide="arrow-down-up" stroke-width="1.5"></i>
-              <button>Alphabetical</button>
-            </div>
+            <i data-lucide="calendar-days" stroke-width="1.5"></i>
+            <h2>Planned</h2>
           </div>
         </div>
       </div>
@@ -114,62 +92,26 @@
                 <i data-lucide="calendar-clock"></i>
                 <input type="text" id="taskDate" placeholder="Pick a Date" readonly />
               </div>
-
-
-
             </div>
           </div>
         </div>
-        <!-- From Uiverse.io by catraco -->
 
         <div class="tasks-wrapper">
-          <div class="task-list">
-            <!-- From Uiverse.io by Fernando-sv -->
-
-            <!-- <div class="loader" id="loader">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M64 32C28.7 32 0 60.7 0 96v64c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm280 72a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm48 24a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zM64 288c-35.3 0-64 28.7-64 64v64c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V352c0-35.3-28.7-64-64-64H64zm280 72a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm56 24a24 24 0 1 1 48 0 24 24 0 1 1 -48 0z"></path></svg>
-  <span></span>
-</div> -->
-            <!-- <div class="task">
-                <div class="task-check">
-                  <i data-lucide="circle" stroke-width="1.5"></i>
-                </div>
-
-                <div class="task-info">
-                  <p class="task-title">task text</p>
-
-                   <div class="task-description">
-                    <p class="task-type">tasks</p>
-
-                    <span class="task-separator"></span>
-
-                    <div class="task-meta-item">
-                      <i data-lucide="sun-medium" stroke-width="1.5"></i>
-                      <p>My Day</p>
-                    </div>
-
-                    <span class="task-separator"></span>
-
-                    <div class="task-meta-item">
-                      <i data-lucide="calendar-days" stroke-width="1.5"></i>
-                      <p>Today</p>
-                    </div>
-
-                    <span class="task-separator"></span>
-
-                    <div class="task-meta-item">
-                      <i data-lucide="bell" stroke-width="1.5"></i>
-                      <p>Today</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="task-important">
-                  <i data-lucide="star" stroke-width="1.5"></i>
-                </div>
-              </div> -->
+          <div class="task-list"></div>
+          <div class="task-section">
+            <div class="task-today"></div>
           </div>
-          <div class="task-completed"></div>
+          <div class="task-section">
+            <div class="task-tomorrow"></div>
+          </div>
+          <div class="task-section">
+            <div class="task-earlier"></div>
+          </div>
+          <div class="task-section">
+            <div class="task-later"></div>
+          </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -178,6 +120,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script type="module" src="./sidebar.js"></script>
-<script type="module" src="./myday.js"></script>
+<script type="module" src="./planned.js"></script>
 
 </html>

@@ -1,4 +1,17 @@
-import { db, auth, doc, updateDoc, addDoc, signOut, onAuthStateChanged, query, where, collection, orderBy, onSnapshot } from "../src/firebase.js";
+import {
+  db,
+  auth,
+  doc,
+  updateDoc,
+  addDoc,
+  signOut,
+  onAuthStateChanged,
+  query,
+  where,
+  collection,
+  orderBy,
+  onSnapshot,
+} from "../src/firebase.js";
 import { getToday, isTaskOverdue } from "./helpers/date-utils.js";
 import { createTaskElement, renderTaskCategories, showTaskSkeletons, showEmptyState } from "./helpers/task-render.js";
 import { setupCalendarDropdown, setupFlatpickr } from "./helpers/calendar-ui.js";
@@ -9,13 +22,11 @@ export let formattedDueDate = "";
 
 const addTaskInput = document.getElementById("addtask");
 const taskList = document.querySelector(".task-list");
-const taskCompleted = document.querySelector(".task-completed");
+const taskCategory = document.querySelector(".task-category");
 const calendarWrapper = document.getElementById("calendarWrapper");
 const logoutBtn = document.getElementById("logoutBtn");
 const sortBtn = document.getElementById("sortBtn");
-const todayDisplayDate = document.getElementById("today-display-date");
 
-todayDisplayDate.innerHTML = `${getToday().formattedDisplayDate}`;
 
 setupCalendarDropdown((iso, formatted) => {
   taskDueDate = iso;
@@ -33,7 +44,7 @@ async function updateOverdueStatus(task) {
   await updateDoc(docRef, { isOverDue: isTaskOverdue(task.dueDate) });
 }
 
-// Add task on Enter key press
+// -------------------- Add Task --------------------
 addTaskInput.addEventListener("keypress", async (e) => {
   if (e.key !== "Enter") return;
   const title = addTaskInput.value.trim();
@@ -53,7 +64,7 @@ addTaskInput.addEventListener("keypress", async (e) => {
     await addDoc(collection(db, "tasks"), {
       title,
       completed: false,
-      important: false,
+      important: true,
       isMyDay: true,
       dueDate: taskDueDate,
       hasDue: hasDue,
@@ -66,19 +77,17 @@ addTaskInput.addEventListener("keypress", async (e) => {
 
     taskDueDate = null;
   } catch (err) {
-    console.error("Error adding task:", err);
+    console.error(err);
   }
 });
 
-// Authentication state listener
 onAuthStateChanged(auth, (user) => {
+  showTaskSkeletons(taskList, 6);
   if (!user) {
     taskList.innerHTML = "<p>Please login</p>";
-    taskCompleted.innerHTML = "";
+    taskCategory.innerHTML = "";
     return;
   }
-
-  showTaskSkeletons(taskList, 6);
 
   const tasksQuery = query(
     collection(db, "tasks"),
@@ -88,8 +97,7 @@ onAuthStateChanged(auth, (user) => {
 
   onSnapshot(tasksQuery, (snapshot) => {
     taskList.innerHTML = "";
-    taskCompleted.innerHTML = "";
-    const completedTasks = [];
+    taskCategory.innerHTML = "";
     let hasTodayTasks = false;
     let animIndex = 0;
     let renderedCount = 0;
@@ -97,32 +105,28 @@ onAuthStateChanged(auth, (user) => {
     snapshot.docs.forEach((docSnap) => {
       const task = { id: docSnap.id, ...docSnap.data() };
 
-      if (task.completed && task.createdDate === getToday().iso) {
+      updateOverdueStatus(task);
+
+      if (task.important && !task.completed) {
         hasTodayTasks = true;
-        completedTasks.push(task);
-      } else {
-        updateOverdueStatus(task);
-        if (task.createdDate === getToday().iso) {
-          hasTodayTasks = true;
-          const el = createTaskElement(task);
-          el.classList.add("task-anim");
-          el.style.animationDelay = `${animIndex * 0.05}s`;
-          taskList.appendChild(el);
-          animIndex++;
-          renderedCount++;
-        }
+        const el = createTaskElement(task);
+        el.classList.add("task-anim");
+        el.style.animationDelay = `${animIndex * 0.05}s`;
+        taskList.appendChild(el);
+        animIndex++;
+        renderedCount++;
       }
+
     });
 
     if (renderedCount === 0) {
-      showEmptyState(taskList, "My Day");
+      showEmptyState(taskList, "Important");
     }
 
-    // Logic removed
-    if (completedTasks.length > 0)
-      renderTaskCategories(completedTasks, taskCompleted, "Completed");
+
     requestAnimationFrame(() => lucide.createIcons());
   });
+
 });
 
 // -------------------- Logout & Sort --------------------

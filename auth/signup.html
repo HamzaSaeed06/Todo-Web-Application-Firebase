@@ -1,115 +1,101 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign Up | AI Tool</title>
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - Todo App</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/tick-light.svg">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-    <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
 
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <section
-      class="auth-wrapper d-flex align-items-center justify-content-center py-4 px-3"
-    >
-      <div class="auth-card">
-        <div class="auth-logo text-center mb-3">
-          <img src="../assets/svgviewer-output.svg" alt="Logo" width="80" />
-        </div>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-        <h2 class="auth-title text-center">Sign Up</h2>
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
+  </script>
+</head>
 
-        <div class="form-group">
-          <input
-            type="text"
-            class="auth-input"
-            placeholder="Full name"
-            id="fullName"
-          />
-        </div>
+<body>
+  <section class="auth-wrapper d-flex align-items-center justify-content-center py-4 px-3">
+    <div class="auth-card">
+      <div class="auth-logo text-center mb-3">
+        <img src="../assets/tick-black.svg" alt="Logo" width="80" />
+      </div>
 
-        <div class="form-group">
-          <input
-            type="email"
-            class="auth-input"
-            placeholder="Email address"
-            id="email"
-          />
-        </div>
+      <h2 class="auth-title text-center">Sign Up</h2>
 
-        <div class="form-group position-relative">
-          <input
-            type="password"
-            class="auth-input"
-            placeholder="Password"
-            id="password"
-          />
-          <span class="password-toggle" onclick="togglePassword(this)">
-            <i data-lucide="eye-off"></i>
-          </span>
-        </div>
+      <div class="form-group">
+        <input type="text" class="auth-input" placeholder="Full name" id="fullName" />
+      </div>
 
-        <button
-          class="auth-primary-btn d-flex justify-content-center align-items-center gap-2"
-          id="signupBtn"
-        >
-          <p class="m-0">Create Account</p>
+      <div class="form-group">
+        <input type="email" class="auth-input" placeholder="Email address" id="email" />
+      </div>
+
+      <div class="form-group position-relative">
+        <input type="password" class="auth-input" placeholder="Password" id="password" />
+        <span class="password-toggle" onclick="togglePassword(this)">
+          <i data-lucide="eye-off"></i>
+        </span>
+      </div>
+
+      <button class="auth-primary-btn d-flex justify-content-center align-items-center gap-2" id="signupBtn">
+        <p class="m-0">Create Account</p>
+      </button>
+
+      <div class="auth-divider">
+        <span>OR</span>
+      </div>
+
+      <div class="auth-oauth-buttons">
+        <button class="oauth-btn" id="googleBtn">
+          <img src="../assets/svgviewer-google logo.svg" alt="Google" />
+          <span>Sign up with Google</span>
         </button>
 
-        <div class="auth-divider">
-          <span>OR</span>
-        </div>
-
-        <div class="auth-oauth-buttons">
-          <button class="oauth-btn" id="googleBtn">
-            <img src="../assets/svgviewer-google logo.svg" alt="Google" />
-            <span>Sign up with Google</span>
-          </button>
-
-          <button class="oauth-btn" id="githubBtn">
-            <img src="../assets/GitHub_Invertocat_Black.svg" alt="GitHub" />
-            <span>Sign up with GitHub</span>
-          </button>
-        </div>
-
-        <p class="auth-footer-text">
-          Already have an account?
-          <a href="./login.html">Login</a>
-        </p>
+        <button class="oauth-btn" id="githubBtn">
+          <img src="../assets/GitHub_Invertocat_Black.svg" alt="GitHub" class="github-logo-dark" />
+          <img src="../assets/GitHub_Invertocat_White.svg" alt="GitHub" class="github-logo-light" />
+          <span>Sign up with GitHub</span>
+        </button>
       </div>
-    </section>
 
-    <script>
-      lucide.createIcons();
+      <p class="auth-footer-text">
+        Already have an account?
+        <a href="./login.html">Login</a>
+      </p>
+    </div>
+  </section>
 
-      function togglePassword(el) {
-        const input = el.previousElementSibling;
-        const icon = el.querySelector("svg");
+  <script>
+    lucide.createIcons();
 
-        if (input.type === "password") {
-          input.type = "text";
-          icon.setAttribute("data-lucide", "eye");
-        } else {
-          input.type = "password";
-          icon.setAttribute("data-lucide", "eye-off");
-        }
-        lucide.createIcons();
+    function togglePassword(el) {
+      const input = el.previousElementSibling;
+      const icon = el.querySelector("svg");
+
+      if (input.type === "password") {
+        input.type = "text";
+        icon.setAttribute("data-lucide", "eye");
+      } else {
+        input.type = "password";
+        icon.setAttribute("data-lucide", "eye-off");
       }
-    </script>
-  </body>
-  <script type="module" src="./signup.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      lucide.createIcons();
+    }
+  </script>
+</body>
+<script type="module" src="./signup.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </html>
